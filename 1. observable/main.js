@@ -40,15 +40,15 @@
 // obs$.subscribe((result) => console.log(result.response));
 
 //5. 직접 만드는 스트림
-const { Observable } = rxjs;
+// const { Observable } = rxjs;
 
-const obs$ = new Observable((subscriber) => {
-  subscriber.next(1);
-  subscriber.next(2);
-  subscriber.next(3);
+// const obs$ = new Observable((subscriber) => {
+//   subscriber.next(1);
+//   subscriber.next(2);
+//   subscriber.next(3);
 
-  // 값을 다 발행한 뒤에는 compelte를 실행하여 메모리 해제
-  subscriber.complete();
-});
+//   // 값을 다 발행한 뒤에는 compelte를 실행하여 메모리 해제
+//   subscriber.complete();
+// });
 
-obs$.subscribe((item) => console.log(item));
+// obs$.subscribe((item) => console.log(item));
