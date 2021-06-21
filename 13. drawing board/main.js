@@ -75,3 +75,29 @@ function drawLine(xy) {
   ctx.closePath();
   ctx.stroke();
 }
+
+function drawIndicator({ x, y }) {
+  ctx.lineWidth = 3;
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(590, 0, 10, 360);
+  ctx.fillRect(0, 350, 600, 10);
+  ctx.strokeStyle = "yellow";
+  ctx.beginPath();
+  ctx.moveTo(x, 350);
+  ctx.lineTo(x, 360);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(590, y);
+  ctx.lineTo(600, y);
+  ctx.stroke();
+  ctx.strokeStyle = "dodgerblue";
+}
+
+fromEvent(canvas, "mousemove")
+  .pipe(
+    throttleTime(300, undefined, {
+      leading: false,
+      trailing: true,
+    })
+  )
+  .subscribe(drawIndicator);
