@@ -10,6 +10,7 @@ const {
   switchMap,
   throttleTime,
   mergeMap,
+  concatMap,
 } = rxjs.operators;
 
 const canvas = document.getElementById("canvas");
@@ -18,35 +19,52 @@ ctx.lineWidth = 3;
 ctx.strokeStyle = "dodgerblue";
 ctx.font = "16px sans-serif";
 
-const whichMap = rxjs.operators.mergeMap;
+const whichMap = rxjs.operators.switchMap;
+const whichMapBS = new BehaviorSubject("mergeMap");
+whichMapBS.subscribe((x) => {
+  ctx.clearRect(0, 0, 600, 360);
+  ctx.fillText(x, 12, 24);
+});
 
-fromEvent(canvas, "click")
+merge(
+  fromEvent(document.getElementById("mergeMap"), "click"),
+  fromEvent(document.getElementById("concatMap"), "click"),
+  fromEvent(document.getElementById("switchMap"), "click")
+)
+  .pipe(pluck("target", "value"), tap(console.log))
+  .subscribe((x) => whichMapBS.next(x));
+
+whichMapBS
   .pipe(
-    map((e) => {
-      return { x: e.x, y: e.y };
-    }),
-    startWith({ x1: null, y1: null, x2: null, y2: null }),
-    scan((acc, cur) => {
-      return { x1: acc.x2, y1: acc.y2, x2: cur.x, y2: cur.y };
-    }),
-    whichMap((xy) =>
-      iif(
-        (_) => xy.x1 === null,
-        empty(),
-        interval(10).pipe(
-          startWith({ x1: xy.x1, y1: xy.y1, x2: xy.x1, y2: xy.y1 }),
-          scan((acc, cur) => {
-            return {
-              x1: acc.x1,
-              y1: acc.y1,
-              x2: acc.x2 + (xy.x2 - xy.x1) / 100,
-              y2: acc.y2 + (xy.y2 - xy.y1) / 100,
-            };
-          }),
-          take(100)
+    switchMap((which) => {
+      return fromEvent(canvas, "click").pipe(
+        map((e) => {
+          return { x: e.x, y: e.y };
+        }),
+        startWith({ x1: null, y1: null, x2: null, y2: null }),
+        scan((acc, cur) => {
+          return { x1: acc.x2, y1: acc.y2, x2: cur.x, y2: cur.y };
+        }),
+        rxjs.operators[which]((xy) =>
+          iif(
+            (_) => xy.x1 === null,
+            empty(),
+            interval(10).pipe(
+              startWith({ x1: xy.x1, y1: xy.y1, x2: xy.x1, y2: xy.y1 }),
+              scan((acc, cur) => {
+                return {
+                  x1: acc.x1,
+                  y1: acc.y1,
+                  x2: acc.x2 + (xy.x2 - xy.x1) / 100,
+                  y2: acc.y2 + (xy.y2 - xy.y1) / 100,
+                };
+              }),
+              take(100)
+            )
+          )
         )
-      )
-    )
+      );
+    })
   )
   .subscribe(drawLine);
 
